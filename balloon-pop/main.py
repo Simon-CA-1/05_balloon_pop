@@ -4,6 +4,7 @@ Balloon Pop (Lab Starter)
 Run with:  python3 main.py
 
 Click balloons to pop them before they reach the bottom.
+Press R after the game ends to start a new round.
 """
 
 import pygame
@@ -27,6 +28,9 @@ def main():
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 engine.handle_click(event.pos)
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
+                if engine.game_over:
+                    engine.reset()
 
         engine.update()
         engine.draw(screen, font)

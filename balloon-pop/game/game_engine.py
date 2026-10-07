@@ -1,9 +1,8 @@
 """
 GameEngine: owns all balloons, spawns new ones, and handles clicks.
 
-Starter version: one balloon type (random size, fixed points), no
-lives system yet, no timer yet. Click detection also has a known bug
-(see game/click_detection.py) that Task 1 asks you to fix.
+Supports multiple balloon types, a lives system, and a timed round
+with restart.
 """
 
 import random
@@ -14,13 +13,20 @@ from game.renderer import WIDTH, HEIGHT
 
 SPAWN_INTERVAL_FRAMES = 45
 STARTING_LIVES = 3
+FPS = 60
+ROUND_SECONDS = 30
+
 
 class GameEngine:
     def __init__(self):
+        self.reset()
+
+    def reset(self):
         self.balloons = []
         self.frames_until_spawn = 0
         self.score = 0
         self.lives = STARTING_LIVES
+        self.frames_left = ROUND_SECONDS * FPS
         self.game_over = False
 
     def _spawn_balloon(self):
@@ -46,6 +52,12 @@ class GameEngine:
         if self.game_over:
             return
 
+        self.frames_left -= 1
+        if self.frames_left <= 0:
+            self.frames_left = 0
+            self.game_over = True
+            return
+
         self.frames_until_spawn -= 1
         if self.frames_until_spawn <= 0:
             self._spawn_balloon()
@@ -65,7 +77,13 @@ class GameEngine:
     def draw(self, surface, font):
         from game import renderer
         renderer.draw_scene(surface, self.balloons)
+        seconds_left = (self.frames_left + FPS - 1) // FPS
         renderer.draw_text(surface, font, f"Score: {self.score}", (10, 10))
         renderer.draw_text(surface, font, f"Lives: {self.lives}", (10, 40))
+        renderer.draw_text(surface, font, f"Time: {seconds_left}", (10, 70))
         if self.game_over:
             renderer.draw_banner(surface, font, f"GAME OVER - Final score: {self.score}")
+            renderer.draw_text(
+                surface, font, "Press R to play again",
+                (WIDTH // 2 - 120, HEIGHT // 2 + 30),
+            )
